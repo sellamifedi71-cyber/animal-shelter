@@ -3,6 +3,17 @@ declare(strict_types=1);
 session_start();
 require __DIR__ . '/config.php';
 
+if (isset($_SESSION['admin_id'])) {
+    $roleCheck = $cnx->prepare("SELECT role FROM utilisateur WHERE idu = ?");
+    $currentAdminId = (int)$_SESSION['admin_id'];
+    $roleCheck->bind_param('i', $currentAdminId);
+    $roleCheck->execute();
+    $currentAdmin = $roleCheck->get_result()->fetch_assoc();
+    if (!$currentAdmin || $currentAdmin['role'] !== 'admin') {
+        unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_action_csrf']);
+    }
+}
+
 if (!isset($_SESSION['admin_id'])) {
     if (empty($_SESSION['admin_login_csrf'])) {
         $_SESSION['admin_login_csrf'] = bin2hex(random_bytes(32));
@@ -64,7 +75,7 @@ $requests = $stmt->get_result();
 <main class="container">
     <header class="site-header">
         <div class="brand"><span class="brand-mark">F</span><div><h1>Fedi Shelter</h1><p>Espace équipe</p></div></div>
-        <form action="admin_logout.php" method="post"><button type="submit">Déconnexion</button></form>
+        <form action="admin_logout.php" method="post"><input type="hidden" name="csrf" value="<?= h($_SESSION['admin_action_csrf']) ?>"><button type="submit">Déconnexion</button></form>
     </header>
     <section class="panel">
         <h2>Demandes en attente</h2>
