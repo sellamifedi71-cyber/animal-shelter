@@ -8,10 +8,12 @@ if (!is_string($csrf) || empty($_SESSION['adoption_csrf']) || !hash_equals($_SES
 $expectedGcd = $_SESSION['adoption_gcd'] ?? null;
 $submittedGcd = filter_input(INPUT_POST, 'pgcd', FILTER_VALIDATE_INT);
 if (!is_int($expectedGcd) || $submittedGcd === false || $submittedGcd === null || $submittedGcd !== $expectedGcd) { http_response_code(422); exit('Vérification PGCD incorrecte. Rechargez le formulaire et réessayez.'); }
-$username = trim($_POST['name'] ?? '');
+$usernameRaw = $_POST['name'] ?? '';
 $password = $_POST['password'] ?? '';
 $animalId = filter_input(INPUT_POST, 'animal_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-if ($username === '' || strlen($username) > 50 || !is_string($password) || $password === '' || strlen($password) > 200 || !$animalId) { http_response_code(422); exit('Informations invalides.'); }
+if (!is_string($usernameRaw) || !is_string($password)) { http_response_code(422); exit('Informations invalides.'); }
+$username = trim($usernameRaw);
+if ($username === '' || strlen($username) > 50 || $password === '' || strlen($password) > 200 || !$animalId) { http_response_code(422); exit('Informations invalides.'); }
 
 $userStmt = $cnx->prepare('SELECT idu, pass FROM utilisateur WHERE username = ?');
 $userStmt->bind_param('s', $username); $userStmt->execute(); $user = $userStmt->get_result()->fetch_assoc();
