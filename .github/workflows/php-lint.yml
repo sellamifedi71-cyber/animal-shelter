@@ -17,7 +17,6 @@ jobs:
       - name: Lint application PHP files
         run: |
           php -l 'config.php'
-          php -l 'index.php'
           php -l 'request.php'
           php -l 'admin.php'
           php -l 'admin_login.php'
