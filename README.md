@@ -5,10 +5,11 @@ A small PHP/MySQL school project for browsing animals and submitting adoption re
 ## Local setup
 
 1. Install XAMPP/WAMP/Laragon with PHP 8+ and MySQL/MariaDB.
-2. Import `animalbd.sql` into phpMyAdmin (database name: `animalbd`).
+2. In phpMyAdmin, create a database named `animalbd`, select it, then import `animalbd.sql`.
 3. Import `migration.sql` once. It enables automatic IDs and adds a database-level safeguard against duplicate pending requests for the same user and animal.
 4. Check the database credentials in `config.php`.
-5. Place the project in the web root and open `http://localhost/animal-shelter/`.
+5. For local testing, the sample login is username `sami23` and password `pass123`. These are demonstration credentials only; replace the sample users before deployment.
+6. Place the project in the web root and open `http://localhost/animal-shelter/`.
 
 ## Features
 
