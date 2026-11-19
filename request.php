@@ -23,15 +23,15 @@ $info = password_get_info($stored);
 $isHashed = isset($info['algoName']) && $info['algoName'] !== 'unknown';
 $validPassword = $isHashed ? password_verify($password, $stored) : hash_equals($stored, $password);
 if (!$validPassword) { http_response_code(401); exit('Nom d’utilisateur ou mot de passe incorrect.'); }
+$userId = (int)$user['idu'];
 if (!$isHashed) {
     $newHash = password_hash($password, PASSWORD_DEFAULT);
     $upgrade = $cnx->prepare('UPDATE utilisateur SET pass = ? WHERE idu = ?');
-    $userId = (int)$user['idu']; $upgrade->bind_param('si', $newHash, $userId); $upgrade->execute();
+    $upgrade->bind_param('si', $newHash, $userId); $upgrade->execute();
 }
 $animalStmt = $cnx->prepare('SELECT ida FROM animal WHERE ida = ?');
 $animalStmt->bind_param('i', $animalId); $animalStmt->execute();
 if (!$animalStmt->get_result()->fetch_assoc()) { http_response_code(404); exit('Animal introuvable.'); }
-$userId = (int)$user['idu'];
 $pending = $cnx->prepare("SELECT id FROM demande WHERE idu = ? AND ida = ? AND decision = 'W' LIMIT 1");
 $pending->bind_param('ii', $userId, $animalId); $pending->execute();
 if ($pending->get_result()->fetch_assoc()) { http_response_code(409); exit('Une demande pour cet animal est déjà en attente.'); }
@@ -43,6 +43,10 @@ try {
     if ((int)$exception->getCode() === 1062) { http_response_code(409); exit('Une demande pour cet animal est déjà en attente.'); }
     throw $exception;
 }
+$requestId = (int)$cnx->insert_id;
+session_regenerate_id(true);
+$_SESSION['shelter_user_id'] = $userId;
+$_SESSION['shelter_username'] = $username;
 $_SESSION['adoption_csrf'] = bin2hex(random_bytes(32));
 ?>
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demande envoyée — Fedi Shelter</title><link rel="stylesheet" href="style.css"></head><body><main class="container"><p class="success">Votre demande d'adoption a été enregistrée et est en attente d'examen.</p><p>Référence de la demande : <strong>#<?= (int)$cnx->insert_id ?></strong></p><p><a href="Av_animals.html">Consulter les animaux</a> · <a href="index.html">Accueil</a></p></main></body></html>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demande envoyée — Fedi Shelter</title><link rel="stylesheet" href="style.css"></head><body><main class="container"><p class="success">Votre demande d'adoption a été enregistrée et est en attente d'examen.</p><p>Référence de la demande : <strong>#<?= $requestId ?></strong></p><p><a href="my_requests.php">Suivre mes demandes</a> · <a href="Av_animals.html">Consulter les animaux</a> · <a href="index.html">Accueil</a></p></main></body></html>
