@@ -1,4 +1,4 @@
-# IKODE Shelter — animal shelter project
+# Fedi Shelter — animal adoption project
 
 A small PHP/MySQL school project for browsing animals and submitting adoption requests.
 

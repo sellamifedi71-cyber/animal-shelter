@@ -36,7 +36,13 @@ $pending = $cnx->prepare("SELECT id FROM demande WHERE idu = ? AND ida = ? AND d
 $pending->bind_param('ii', $userId, $animalId); $pending->execute();
 if ($pending->get_result()->fetch_assoc()) { http_response_code(409); exit('Une demande pour cet animal est déjà en attente.'); }
 $insert = $cnx->prepare("INSERT INTO demande (idu, ida, `date`, decision) VALUES (?, ?, CURDATE(), 'W')");
-$insert->bind_param('ii', $userId, $animalId); $insert->execute();
+$insert->bind_param('ii', $userId, $animalId);
+try {
+    $insert->execute();
+} catch (mysqli_sql_exception $exception) {
+    if ((int)$exception->getCode() === 1062) { http_response_code(409); exit('Une demande pour cet animal est déjà en attente.'); }
+    throw $exception;
+}
 $_SESSION['adoption_csrf'] = bin2hex(random_bytes(32));
 ?>
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demande envoyée — IKODE Shelter</title><link rel="stylesheet" href="style.css"></head><body><main class="container"><p class="success">Votre demande d'adoption a été enregistrée et est en attente d'examen.</p><p>Référence de la demande : <strong>#<?= (int)$cnx->insert_id ?></strong></p><p><a href="Av_animals.html">Consulter les animaux</a> · <a href="index.html">Accueil</a></p></main></body></html>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demande envoyée — Fedi Shelter</title><link rel="stylesheet" href="style.css"></head><body><main class="container"><p class="success">Votre demande d'adoption a été enregistrée et est en attente d'examen.</p><p>Référence de la demande : <strong>#<?= (int)$cnx->insert_id ?></strong></p><p><a href="Av_animals.html">Consulter les animaux</a> · <a href="index.html">Accueil</a></p></main></body></html>
