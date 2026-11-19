@@ -8,3 +8,8 @@ ALTER TABLE `demande`
 ALTER TABLE `demande`
   ADD COLUMN `pending_idu` int(11) GENERATED ALWAYS AS (CASE WHEN `decision` = 'W' THEN `idu` ELSE NULL END) STORED,
   ADD UNIQUE KEY `uq_demande_pending_user_animal` (`pending_idu`, `ida`);
+
+
+-- Add a role flag so trusted shelter staff can review adoption requests.
+ALTER TABLE `utilisateur`
+  ADD COLUMN `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user';
